@@ -1,0 +1,69 @@
+--- a/sanei/sanei_scsi.c
++++ b/sanei/sanei_scsi.c
+@@ -1585,7 +1585,7 @@
+   fd_info[fd].sense_handler = 0;
+   fd_info[fd].sense_handler_arg = 0;
+ 
+-#ifdef WIN32
++#if USE == WIN32_INTERFACE
+   CloseHandle(fd);
+ #else
+   if (!fd_info[fd].fake_fd)
+--- a/backend/dll.c
++++ b/backend/dll.c
+@@ -228,19 +228,19 @@
+   0 /* inited */,                               \
+   0 /* handle */,                               \
+   {                                             \
+-    BE_ENTRY(name,init),                        \
+-    BE_ENTRY(name,exit),                        \
+-    BE_ENTRY(name,get_devices),                 \
+-    BE_ENTRY(name,open),                        \
+-    BE_ENTRY(name,close),                       \
+-    BE_ENTRY(name,get_option_descriptor),       \
+-    BE_ENTRY(name,control_option),              \
+-    BE_ENTRY(name,get_parameters),              \
+-    BE_ENTRY(name,start),                       \
+-    BE_ENTRY(name,read),                        \
+-    BE_ENTRY(name,cancel),                      \
+-    BE_ENTRY(name,set_io_mode),                 \
+-    BE_ENTRY(name,get_select_fd)                \
++    (void *(*)(void)) BE_ENTRY(name,init),                        \
++    (void *(*)(void)) BE_ENTRY(name,exit),                        \
++    (void *(*)(void)) BE_ENTRY(name,get_devices),                 \
++    (void *(*)(void)) BE_ENTRY(name,open),                        \
++    (void *(*)(void)) BE_ENTRY(name,close),                       \
++    (void *(*)(void)) BE_ENTRY(name,get_option_descriptor),       \
++    (void *(*)(void)) BE_ENTRY(name,control_option),              \
++    (void *(*)(void)) BE_ENTRY(name,get_parameters),              \
++    (void *(*)(void)) BE_ENTRY(name,start),                       \
++    (void *(*)(void)) BE_ENTRY(name,read),                        \
++    (void *(*)(void)) BE_ENTRY(name,cancel),                      \
++    (void *(*)(void)) BE_ENTRY(name,set_io_mode),                 \
++    (void *(*)(void)) BE_ENTRY(name,get_select_fd)                \
+   }                                             \
+ }
+ 
+--- a/backend/test.c
++++ b/backend/test.c
+@@ -1917,7 +1917,8 @@
+ 	   test_device->sane.name, test_device->sane.vendor,
+ 	   test_device->sane.model, test_device->sane.type);
+     }
+-  test_device->next = 0;
++  if (num > 0)
++    test_device->next = 0;
+   sane_device_list[num] = 0;
+   srand ((unsigned int) time (NULL));
+   random_factor = ((double) rand ()) / RAND_MAX + 0.5;
+--- a/backend/gt68xx.c
++++ b/backend/gt68xx.c
+@@ -56,7 +56,7 @@
+ #define LONG_TIMEOUT (30 * 1000)
+ 
+ /* Use a reader process if possible (usually faster) */
+-#if defined (HAVE_SYS_SHM_H) && (!defined (USE_PTHREAD)) && (!defined (HAVE_OS2_H))
++#if defined (HAVE_SYS_SHM_H) && (!defined (USE_PTHREAD)) && (!defined (HAVE_OS2_H)) && (!defined (__CYGWIN__))
+ #define USE_FORK
+ #define SHM_BUFFERS 10
+ #endif

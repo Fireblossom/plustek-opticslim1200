@@ -1,0 +1,10 @@
+.cache/
+.runtime/
+dist/
+__pycache__/
+*.pyc
+*.part
+*.fw
+*.vdi
+*.vbox
+*.stackdump
